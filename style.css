@@ -1,0 +1,13 @@
+#keyboard {
+    width: 750px;
+    height: 500px;
+}
+
+#keyboard {
+    background: url("./png/keyboard-base-1x.png"),
+                url("./png/keyboard-shading-1x.png");
+    background-size: contain;
+    background-blend-mode: normal;
+    background-repeat: no-repeat;
+    resize: both;
+}

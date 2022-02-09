@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <meta charset="UTF-8">
+    <title>Web LTN Reader</title>
+
+    <script src="./hex.js"></script> 
+    <script src="./app.js"></script> 
+    <link rel="stylesheet" href="./style.css">
+<head>
+
+</head>
+<body>
+
+<div id="main">
+
+    <div id="controls">
+        <label for="ltn-file">Select an .LTN file:</label>
+        <input id="ltn-file" type="file" onchange="loadFile()"></input>
+    </div>
+
+    <div id="display">
+        <div id="keyboard"></div>
+        <!-- <img id="keyboard-base" src="./png/keyboard-base-1x.png" width=750></img> -->
+    </div>
+
+</div>
+
+</body>
+
+</html>
