@@ -1,3 +1,5 @@
+const LATERALRADIUSRATIO = 0.8660254037844;
+
 const boardGeometry =
 {
     horizontalLines: [
@@ -40,10 +42,21 @@ function boardKeyToHexPosition(boardNum, keyNum) {
 		let rowIx = boardGeometry.horizontalLines[lineIx].indexOf(keyNum);
 		if (rowIx != -1)
 			return { 
-                x: boardGeometry.boardXOffset * boardIndex + rowIx + boardGeometry.rowOffsets[lineIx], 
+                x: boardGeometry.boardXOffset * boardNum + rowIx + boardGeometry.rowOffsets[lineIx], 
                 y: boardGeometry.boardYOffset * boardNum - lineIx 
             };
 	}
+}
+
+function getKeyboardHexCoords() {
+	let coords = [];
+	for (let board = 0; board < 5; board++) {
+		let boardCoords = [];
+		coords.push(boardCoords);
+		for (let key = 0; key < 56; key++)
+			boardCoords.push(boardKeyToHexPosition(board, key));
+	}
+	return coords;
 }
 
 function distanceStepsAwayX(lateral, margin, stepsX, stepsY) {
