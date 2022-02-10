@@ -1,15 +1,17 @@
+let mapping = {};
+
 function getLineType(line) {
-    if (/\[Board\d\]/.test(line))
+    if (/^\[Board\d\]/.test(line))
         return 'board';
-    if (/Key/.test(line))
+    if (/^Key/.test(line))
         return 'note';
-    if (/Chan/.test(line))
+    if (/^Chan/.test(line))
         return 'channel';
-    if (/Col/.test(line))
+    if (/^Col/.test(line))
         return 'color';
-    if (/KTyp/.test(line))
+    if (/^KTyp/.test(line))
         return 'type';
-    if (/CCInvert/.test(line))
+    if (/^CCInvert/.test(line))
         return 'ccInvert';
     if (line.includes('='))
         return 'table';
@@ -28,6 +30,7 @@ function parseLtn(ltn) {
     let mappingData = {};
     let currentBoard;
     let currentKey;
+    let keyNum;
 
     for (const line of lines) {
         const linetype = getLineType(line);
@@ -38,16 +41,21 @@ function parseLtn(ltn) {
                 break;
 
             case 'table':
-                currentBoard[getTableName(line)] = getTableValues(line);
+                mappingData[getTableName(line)] = getTableValues(line);
                 break;
 
             case 'invalid':
                 break;
 
             default:    
-                if (currentBoard[getKeyNum(line)] === undefined)
-                    currentBoard[getKeyNum(line)] = {};
-                currentKey = currentBoard[getKeyNum(line)];
+                keyNum = getKeyNum(line);
+                if (keyNum == null) {
+                    console.log('bad key: ' + line);
+                    continue;
+                }
+                if (currentBoard[keyNum] === undefined)
+                    currentBoard[keyNum] = {};
+                currentKey = currentBoard[keyNum];
 
                 switch (linetype) {
                     case 'ccInvert':
@@ -61,7 +69,6 @@ function parseLtn(ltn) {
         }
     }
 
-    console.log(mappingData);
     return mappingData;
 }
 
@@ -80,6 +87,10 @@ function loadFile() {
     console.log('loading ' + name);
 
     let file = new FileReader();
-    file.onload=readFile;
+    file.onload = (data) => {
+        mapping = readFile(data);
+        resetCanvas();
+    };
+
     file.readAsText(fileinfo);
 }
