@@ -1,13 +1,44 @@
-#keyboard {
-    width: 750px;
+#display {
+    width: 700px;
     height: 500px;
 }
 
-#keyboard {
-    background: url("./png/keyboard-base-1x.png"),
-                url("./png/keyboard-shading-1x.png");
+.layout {
+    width: inherit;
+    height: inherit;
+}
+
+.key {
+    width: 10px;
+    height: 10px;
+}
+
+.template {
+    display: none;
+}
+
+#keyboard-base {
+    background: url("./png/keyboard-base-1x.png");
     background-size: contain;
     background-blend-mode: normal;
     background-repeat: no-repeat;
     resize: both;
+}
+
+
+/* #key-layout {  
+    position: absolute;
+    top: 30px;
+    left: 8px;
+} */
+
+#keyboard-shading{
+    display: none;
+    background: url("./png/keyboard-shading-1x.png");
+    background-size: contain;
+    background-blend-mode: multiply;
+    background-repeat: no-repeat;
+    position: absolute;
+    top: 30px;
+    left: 8px;
 }
