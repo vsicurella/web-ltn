@@ -1,6 +1,6 @@
 #display {
-    width: 700px;
-    height: 500px;
+    width: 1300px;
+    height: 280px;
 }
 
 .layout {
@@ -9,8 +9,7 @@
 }
 
 .key {
-    width: 10px;
-    height: 10px;
+    position: inherit;
 }
 
 .template {
@@ -23,6 +22,12 @@
     background-blend-mode: normal;
     background-repeat: no-repeat;
     resize: both;
+}
+
+#keys {
+    position: absolute;
+    top: 20px;
+    left: -302px;
 }
 
 

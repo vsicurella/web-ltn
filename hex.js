@@ -1,4 +1,10 @@
 const LATERALRADIUSRATIO = 0.8660254037844;
+const BOARDROWOFFSET = 2;
+
+let horizontalScalar = 1.0;
+let verticalScalar = 1.0;
+
+let startingCentre = { x: 0, y: 0 };
 
 const boardGeometry =
 {
@@ -67,50 +73,83 @@ function distanceStepsAwayY(radius, margin, stepsY) {
 	return stepsY * (radius * 1.5 + margin * LATERALRADIUSRATIO);
 }
 
-function calculateCentres(startingOctave, numOctaves) {
-	let centres = [];
+function verticalToSlantOffset(rowNum, offsetIn) {
+	return Math.floor(offsetIn - (rowNum * 0.5));
+}
+
+
+// TODO Turn into a class
+
+function calculateCentres(startingOctave, numOctaves, basis = { column: { x: 0.5, y: 0.5 }, row: { x: 0.5, y: 0.5 } }) {
+	let centres = {};
 
 	const numColumnsInOctave = boardGeometry.maxHorizontalLength;
 	const numRowsInOctave	 = boardGeometry.horizontalLines.length;
 
 	const totalOctaves = Math.abs(numOctaves - startingOctave);
-	const maxRowLength = totalOctaves * numColumnsInOctave;
 	const maxColumnLength = numRowsInOctave + BOARDROWOFFSET * (totalOctaves - 1);
 
-	const rad = radius * verticalScalar;
-	const lat = radius * LATERALRADIUSRATIO * horizontalScalar;
+	const colX = basis.column.x * horizontalScalar;
+	const colY = basis.column.y * horizontalScalar;
+	const rowX = basis.row.x    * verticalScalar;
+	const rowY = basis.row.y    * verticalScalar;
 
 	let octaveColumnOffset = startingOctave * numColumnsInOctave;
 	let octaveRowOffset = startingOctave * BOARDROWOFFSET;
-
-	const yUnit = distanceStepsAwayY(rad, margin, 1);
 	
-	let yCoordinate = startingCentre.y;
-
 	for (let octaveIndex = startingOctave; octaveIndex < startingOctave + numOctaves; octaveIndex++) {
+
+		centres[octaveIndex] = {};
+		let octaveCentres = centres[octaveIndex];
+		let keyIndex = 0;
+
 		for (let row = 0; row < maxColumnLength; row++) {
-			let rowCount = boardGeometry.horizontalLines[row].length;
-			let firstColumn = boardGeometry.firstColumnOffset(row) + octaveColumnOffset;
+			const colStart = verticalToSlantOffset(row, boardGeometry.firstColumnOffsets[row]) + octaveColumnOffset;
+			const colEnd = colStart + boardGeometry.horizontalLines[row]?.length || 0;
 
 			let octaveRow = row + octaveRowOffset;
 
-			for (let col = 0; col < rowCount; col++) {
-				let centre = {
-					// TODO: review implementation. this curently treats rows as zigzag 
-					x: startingCentre.x + distanceStepsAwayX(lat, margin, firstColumn + col, (octaveRow % 2)),
-					y: yCoordinate
-                };
-				centre.applyTransform(transform);
-				hexagonCentres.add(centre);
-			}
+			for (let col = colStart; col < colEnd; col++) {
 
-			yCoordinate += yUnit;
+				let centre = {
+					x: startingCentre.x + col * colX + octaveRow * rowX,
+					y: startingCentre.y + col * colY + octaveRow * rowY
+                };
+				// centre.applyTransform(transform);
+				octaveCentres[keyIndex] = centre;
+				keyIndex++;
+			}
 		}
 
 		octaveColumnOffset += numColumnsInOctave;
 		octaveRowOffset += BOARDROWOFFSET;
-		yCoordinate = startingCentre.y + distanceStepsAwayY(rad, margin, octaveRowOffset);
 	}
 
-	return hexagonCentres;
+	return centres;
+}
+
+function getSkewBasis(firstKeyCentrePoint, secondKeyCentrePoint, rowStepsFirstToSecond, thirdKeyCentrePoint, colStepsSecondToThird) {	
+	
+	startingCentre = firstKeyCentrePoint;
+
+	const secondKeyNormFirst = { x: secondKeyCentrePoint.x - startingCentre.x, y: secondKeyCentrePoint.y - startingCentre.y };
+	const thirdKeyNormSecond = { x: thirdKeyCentrePoint.x - secondKeyCentrePoint.x, y: thirdKeyCentrePoint.y - secondKeyCentrePoint.y }
+
+	const columnAngle = Math.atan((thirdKeyCentrePoint.y - secondKeyCentrePoint.y) / (thirdKeyCentrePoint.x - secondKeyCentrePoint.x));
+	const rowAngle = Math.atan(secondKeyNormFirst.y / secondKeyNormFirst.x);
+
+	const columnAngleCos = Math.cos(columnAngle);
+	const columnAngleSin = Math.sin(columnAngle);
+	const rowAngleCos = Math.cos(rowAngle);
+	const rowAngleSin = Math.sin(rowAngle);
+
+	const colUnit = thirdKeyNormSecond.x / (colStepsSecondToThird * columnAngleCos);
+	const rowUnit = secondKeyNormFirst.y / (rowStepsFirstToSecond * rowAngleSin);
+
+	const basis = {
+		column: { x: colUnit * columnAngleCos, y: colUnit * columnAngleSin },
+		row:	{ x: rowUnit * rowAngleCos,    y: rowUnit * rowAngleSin }
+	}; 
+
+	return basis;
 }

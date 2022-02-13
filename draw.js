@@ -1,3 +1,23 @@
+const imageAspect = 2.498233;
+const imageY      = 1.0 / 7.0;
+
+const keybedX = 0.06908748;
+
+const keyW = 0.027352;
+const keyH = 0.07307;
+
+const oct1Key1X = 0.0839425;
+const oct1Key1Y = 0.335887;
+
+const oct1Key56X = 0.27304881;
+const oct1Key56Y = 0.8314673;
+
+const oct5Key7X = 0.878802;
+const oct5Key7Y = 0.356511491;
+
+const LumatoneColumnAngle = -0.30404;
+const LumatoneRowAngle = 0.809175;
+
 let mod = (num, mod) => ((num % mod) + mod) % mod;
 
 function rgbToHue(rgb) {
@@ -31,53 +51,54 @@ function rgbToHue(rgb) {
 
 function drawLayout(context) {
     console.log('draw layout');
-    const hexCoords = getKeyboardHexCoords();
 
-    const keyWidth = 10;
-    const keyHeight = 10;
+    const displayElement = document.getElementById("keyboard-base");
+    const width = displayElement.clientWidth;
+    const height = displayElement.clientHeight;
 
-    // let keyBase = new Image();
-    // keyBase.onload = (data) => {
-    //     console.log(data);
-    //     for (const board of hexCoords) {
-    //         for (const key of board) {
-    //             let x = key.x * 10 + 100;
-    //             let y = key.y * 10 + 100;
-    //             console.log(`x: ${x}, y: ${y}`);
-    //             context.drawImage(keyBase, x, y, keyWidth, keyHeight);
-    //         }
-    //     }
-    // }
-    // keyBase.src = "./svg/key-outline.svg";
+    const graphicHeight = height;
+	const graphicWidth = imageAspect * graphicHeight;
 
-    const lateral = 10;
-    const margin = 4;
+	const lumatoneBounds = {
+        x: (width - graphicWidth) * 0.5,
+        y: 0,
+        w: graphicWidth,
+        h: graphicHeight
+    };
+
+    let keyWidth = graphicWidth * keyW;
+    let keyHeight = graphicHeight * keyH;
+
+    const oct1Key1  = { x: oct1Key1X * graphicWidth + lumatoneBounds.x,   y: oct1Key1Y * graphicHeight + lumatoneBounds.y };
+	const oct1Key56 = { x: oct1Key56X * graphicWidth + lumatoneBounds.x,  y: oct1Key56Y * graphicHeight + lumatoneBounds.y };
+	const oct5Key7  = { x: oct5Key7X * graphicWidth + lumatoneBounds.x,   y: oct5Key7Y * graphicHeight + lumatoneBounds.y };
+
+    const basis = getSkewBasis(oct1Key1, oct1Key56, 10, oct5Key7, 24);
+    const centres = calculateCentres(0, 5, basis);
+
+    const numBoards = Object.keys(mapping).filter(x => /\d+/.test(x)).length;
 
     let keysParent = document.getElementById('keys');
     keysParent.innerHTML = '';
-
     let svg = document.getElementById('key-outline');
-
-    const numBoards = Object.keys(mapping).filter(x => /\d+/.test(x)).length;
 
     for (let b = 0; b < numBoards; b++) {
         const board = mapping[b];
         const numKeys = Object.keys(board).length;
         for (let k = 0; k < numKeys; k++) {
             const keyData = board[k];
-            const pos = hexCoords[b][k];
+            //const pos = hexCoords[b][k];
 
-            const x = distanceStepsAwayX(lateral, margin, pos.x, pos.y);
-            const y = distanceStepsAwayY(lateral, margin, pos.y);
+            const centre = centres[b][k];
 
             let newKey = svg.cloneNode(true);
             newKey.id = `key-${k + b*numKeys}`;
 
-            newKey.style.position = 'relative';
-            newKey.style.left = `${x}px`;
-            newKey.style.top = `${y}px`;
-            newKey.style.width = '10px';
-            newKey.style.height = '10px';
+            newKey.style.position = 'inherit';
+            newKey.style.left = `${centre.x}px`;
+            newKey.style.top = `${centre.y}px`;
+            newKey.style.width = `${Math.round(keyWidth)}px`;
+            newKey.style.height = `${Math.round(keyHeight)}px`;
 
             let color = `#${keyData.color.slice(2)}`;
             newKey.style.fill = color;
