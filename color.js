@@ -25,7 +25,13 @@ function rgbaToHex(color) {
         color.b.toString(16),
         Math.round(color.a * 255).toString(16)
     ];
-    return shorts.map(char => char.length === 1 ? `0${char}` : char).join('');
+    return '#' + shorts.map(char => char.length === 1 ? `0${char}` : char).join('');
+}
+
+// expects {r: 0-255, g: 0-255, b: 0-255, a: 0-1} 
+// returns "rgba(r, g, b, a)"
+function rgbaToString(color) {
+    return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
 }
 
 // rgb, 0-255
@@ -136,8 +142,12 @@ function hsvToRgb(hue, saturation, value) {
 // expects object { r, g, b, a }
 function getRgbLed(color) {
     const hsv = rgbToHsv(color.r, color.g, color.b);
-    let brightness = color.a * hsv.v;
-    let ledRgb = hsvToRgb(hsv.h, hsv.s, 1);
-    ledRgb.a = brightness;
+    // let brightness = color.a * hsv.v;
+    // let ledRgb = hsvToRgb(hsv.h, hsv.s, 1);
+    // ledRgb.a = brightness;
+    const brightness = hsv.v * 0.5 + 0.5;
+    const alpha = (1 - (1 - hsv.v)) * color.a;
+    let ledRgb = hsvToRgb(hsv.h, hsv.s, brightness);
+    ledRgb.a = alpha;
     return ledRgb;
 }

@@ -1,4 +1,7 @@
-let mapping = {};
+const NUMOCTAVES = 5;
+const KEYSPEROCT = 56;
+
+let mapping;
 
 function getLineType(line) {
     if (/^\[Board\d\]/.test(line))
@@ -89,7 +92,7 @@ function loadFile() {
     let file = new FileReader();
     file.onload = (data) => {
         mapping = readFile(data);
-        resetCanvas();
+        refreshColor();
     };
 
     file.readAsText(fileinfo);
