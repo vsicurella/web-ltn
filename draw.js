@@ -1,24 +1,16 @@
 const imageAspect = 2.498233;
-const imageY      = 1.0 / 7.0;
 
-const keybedX = 0.06908748;
-
-const keyW = 0.027352;
-const keyH = 0.07307;
-
-const oct1Key1X = 0.0839425;
-const oct1Key1Y = 0.335887;
-
-const oct1Key56X = 0.27304881;
-const oct1Key56Y = 0.8314673;
-
-const oct5Key7X = 0.878802;
-const oct5Key7Y = 0.356511491;
-
-const LumatoneColumnAngle = -0.30404;
-const LumatoneRowAngle = 0.809175;
+let keyW = 0.0285;
+let keyH = 0.0735;
+let oct1Key1X = 0.0839425;
+let oct1Key1Y = 0.3358
+let oct1Key56X = 0.27333;
+let oct1Key56Y = 0.83;
+let oct5Key7X = 0.8785;
+let oct5Key7Y = 0.3555;
 
 let mod = (num, mod) => ((num % mod) + mod) % mod;
+let roundN = (n, value) => Math.round(value * (10 ** n)) / (10 ** n);
 
 function rgbToHue(rgb) {
     let R = parseInt(rgb.slice(0, 2), 16);
@@ -50,7 +42,7 @@ function rgbToHue(rgb) {
 }
 
 function drawLayout(context) {
-    console.log('draw layout');
+    // console.log('draw layout');
 
     const displayElement = document.getElementById("keyboard-base");
     const width = displayElement.clientWidth;
@@ -87,20 +79,18 @@ function drawLayout(context) {
         const numKeys = Object.keys(board).length;
         for (let k = 0; k < numKeys; k++) {
             const keyData = board[k];
-            //const pos = hexCoords[b][k];
-
             const centre = centres[b][k];
 
             let newKey = svg.cloneNode(true);
             newKey.id = `key-${k + b*numKeys}`;
 
             newKey.style.position = 'inherit';
-            newKey.style.left = `${centre.x}px`;
-            newKey.style.top = `${centre.y}px`;
-            newKey.style.width = `${Math.round(keyWidth)}px`;
-            newKey.style.height = `${Math.round(keyHeight)}px`;
+            newKey.style.left = `${roundN(2, centre.x)}px`;
+            newKey.style.top = `${roundN(2, centre.y)}px`;
+            newKey.style.width = `${roundN(1, keyWidth)}px`;
+            newKey.style.height = `${roundN(1, keyHeight)}px`;
 
-            let color = `#${keyData.color.slice(2)}`;
+            let color = `#${keyData.color.slice(keyData.color.length - 6)}`;
             newKey.style.fill = color;
             keysParent.appendChild(newKey);
         }
@@ -118,5 +108,6 @@ function resetCanvas() {
     // ctx.globalCompositeOperation = "multiply";
     // ctx.fillStyle = "red";
 
+    // setInterval(drawLayout, 1000);
     drawLayout();
 }

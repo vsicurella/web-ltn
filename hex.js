@@ -74,7 +74,7 @@ function distanceStepsAwayY(radius, margin, stepsY) {
 }
 
 function verticalToSlantOffset(rowNum, offsetIn) {
-	return Math.floor(offsetIn - (rowNum * 0.5));
+	return offsetIn -  Math.floor((rowNum * 0.5));
 }
 
 
@@ -121,7 +121,7 @@ function calculateCentres(startingOctave, numOctaves, basis = { column: { x: 0.5
 			}
 		}
 
-		octaveColumnOffset += numColumnsInOctave;
+		octaveColumnOffset += (numColumnsInOctave - 1);
 		octaveRowOffset += BOARDROWOFFSET;
 	}
 
