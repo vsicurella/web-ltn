@@ -9,37 +9,9 @@ let oct1Key56Y = 0.83;
 let oct5Key7X = 0.8785;
 let oct5Key7Y = 0.3555;
 
-let mod = (num, mod) => ((num % mod) + mod) % mod;
 let roundN = (n, value) => Math.round(value * (10 ** n)) / (10 ** n);
 
-function rgbToHue(rgb) {
-    let R = parseInt(rgb.slice(0, 2), 16);
-    let G = parseInt(rgb.slice(2, 4), 16);
-    let B = parseInt(rgb.slice(4, 6), 16);
-
-    let r = R/255.0;
-    let g = G/255.0;
-    let b = B/255.0;
-
-    let max = Math.max(r, g, b);
-    let min = Math.min(r, g, b);
-
-    let hue = 0;
-    let delta = max - min;
-
-    if (max === r)
-        hue = 60 * mod(((g-b)/ delta), 6);
-    else if (max === g)
-        hue = 60 * (((b - r) / delta) + 2);
-    else if (max === b)
-        hue = 60 * (((r - g) / delta) + 4);
-    
-    
-    let lightness = (max + min) * 0.5;
-    let saturation = (delta == 0) ? 0 : (delta / ( 1 - Math.abs(2 * lightness - 1)));
-
-    return { h: Math.round(hue), l: Math.round(lightness * 100), s: Math.round(saturation * 100) }; 
-}
+let colorFnc = (hexString) => rgbaToHex(hexToRgba(hexString));
 
 function drawLayout(context) {
     // console.log('draw layout');
@@ -90,7 +62,7 @@ function drawLayout(context) {
             newKey.style.width = `${roundN(1, keyWidth)}px`;
             newKey.style.height = `${roundN(1, keyHeight)}px`;
 
-            let color = `#${keyData.color.slice(keyData.color.length - 6)}`;
+            let color = `#${colorFnc(keyData.color)}`;
             newKey.style.fill = color;
             keysParent.appendChild(newKey);
         }
@@ -111,3 +83,4 @@ function resetCanvas() {
     // setInterval(drawLayout, 1000);
     drawLayout();
 }
+
