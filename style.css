@@ -1,11 +1,6 @@
-#display {
+.layout {
     width: 1300px;
     height: 280px;
-}
-
-.layout {
-    width: inherit;
-    height: inherit;
 }
 
 .key {

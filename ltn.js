@@ -93,6 +93,7 @@ function loadFile() {
     file.onload = (data) => {
         mapping = readFile(data);
         refreshColor();
+        renderToCanvas();
     };
 
     file.readAsText(fileinfo);

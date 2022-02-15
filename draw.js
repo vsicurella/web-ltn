@@ -1,5 +1,6 @@
 const imageAspect = 2.498233;
 
+// "Constants" (not const for tweaking purposes)
 let keyW = 0.0285;
 let keyH = 0.0735;
 let oct1Key1X = 0.0839425;
@@ -8,6 +9,13 @@ let oct1Key56X = 0.27333;
 let oct1Key56Y = 0.83;
 let oct5Key7X = 0.8785;
 let oct5Key7Y = 0.3555;
+
+// Calculated layout properties
+let graphicWidth = 0;
+let graphicHeight = 0;
+let keyWidth = 0;
+let keyHeight = 0;
+let centres = {};
 
 let roundN = (n, value) => Math.round(value * (10 ** n)) / (10 ** n);
 
@@ -32,25 +40,16 @@ function refreshColor() {
     }
 }
 
-function resetKeys() {
-    console.log('reset canvas');
-    // let canvas = document.getElementById("key-layout");
-    // let ctx = canvas.getContext("2d");
-
-    // ctx.fillStyle = "rgba(0, 0, 0, 0)";
-    // ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // ctx.globalCompositeOperation = "multiply";
-    // ctx.fillStyle = "red";
-
-    // setInterval(drawLayout, 1000);
-
+function resetCentres() {
     const displayElement = document.getElementById("keyboard-base");
     const width = displayElement.clientWidth;
     const height = displayElement.clientHeight;
 
-    const graphicHeight = height;
-	const graphicWidth = imageAspect * graphicHeight;
+    graphicHeight = height;
+	graphicWidth = Math.round(imageAspect * graphicHeight);
+
+    keyWidth = graphicWidth * keyW;
+    keyHeight = graphicHeight * keyH;
 
 	const lumatoneBounds = {
         x: (width - graphicWidth) * 0.5,
@@ -59,15 +58,18 @@ function resetKeys() {
         h: graphicHeight
     };
 
-    let keyWidth = graphicWidth * keyW;
-    let keyHeight = graphicHeight * keyH;
-
     const oct1Key1  = { x: oct1Key1X * graphicWidth + lumatoneBounds.x,   y: oct1Key1Y * graphicHeight + lumatoneBounds.y };
 	const oct1Key56 = { x: oct1Key56X * graphicWidth + lumatoneBounds.x,  y: oct1Key56Y * graphicHeight + lumatoneBounds.y };
 	const oct5Key7  = { x: oct5Key7X * graphicWidth + lumatoneBounds.x,   y: oct5Key7Y * graphicHeight + lumatoneBounds.y };
 
     const basis = getSkewBasis(oct1Key1, oct1Key56, 10, oct5Key7, 24);
-    const centres = calculateCentres(0, 5, basis);
+    centres = calculateCentres(0, 5, basis);
+}
+
+function resetKeys() {
+    console.log('reset keys');
+
+    resetCentres();
 
     let keysParent = document.getElementById('keys');
     keysParent.innerHTML = '';
@@ -98,5 +100,71 @@ function resetKeys() {
 
     if (mapping)
         refreshColor();
+}
+
+let keyBlendMode = "normal";
+let shadingBlendMode = "normal";
+function renderToCanvas() {
+    let canvas = document.getElementById("keyboard-render");
+
+    let ctx = canvas.getContext("2d");
+
+    let baseImg, shadingImage, keyOutline;
+    let draw = () => {
+        canvas.width = graphicWidth;
+        canvas.height = graphicHeight;
+
+        const scale = canvas.width / baseImg.naturalWidth;
+
+        ctx.drawImage(baseImg, 0, 0, graphicWidth, graphicHeight);
+
+        if (mapping) {
+            // render keys
+            ctx.globalCompositeOperation = keyBlendMode;
+
+            // ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+            ctx.drawImage(keyOutline, canvas.width * 0.5, canvas.height * 0.5, keyWidth, keyHeight);
+
+            // for (let b = 0; b < NUMOCTAVES; b++) {
+            //     for (let k = 0; k < KEYSPEROCT; k++) {
+            //         let centre = centres[b][k];
+            //         if (centre == undefined) {
+            //             console.log(`board ${b} key ${k} position is undefined`);
+            //             continue;
+            //         }
+
+            //         centre.x *= scale;
+            //         centre.y *= scale;
+
+            //         let keyData = mapping[b][k];
+            //         if (keyData == undefined) {
+            //             console.log(`board ${b} key ${k} data is undefined`);
+            //         }
+            //         console.log(JSON.stringify(centre));
+            //         let color = colorFnc(keyData.color);
+            //         ctx.fillStyle = color;
+            //         ctx.drawImage(keyOutline, centre.x, centre.y);
+            //     }
+            // }
+        
+            // ctx.globalCompositeOperation = shadingBlendMode;
+            // ctx.drawImage(shadingImage, 0, 0, graphicWidth, graphicHeight);
+        }
+    };
+
+    baseImg = new Image(graphicWidth, graphicHeight);
+    shadingImage = new Image(graphicWidth, graphicHeight);
+    keyOutline = new Image(keyWidth, keyHeight);
+    // keyOutline = document.getElementById("key-outline");
+
+    baseImg.src = "./png/keyboard-base-1x.png";
+    baseImg.onload = () => {
+        shadingImage.src = "./png/keyboard-shading-1x.png";
+        shadingImage.onload = () => {
+            keyOutline.src = "./png/key-shape.png";
+            // keyOutline.src = "./svg/key-outline.svg";
+            keyOutline.onload = draw;
+        }
+    }
 }
 
