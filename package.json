@@ -1,0 +1,20 @@
+{
+  "name": "web-ltn",
+  "version": "1.0.0",
+  "description": "View Lumatone mappings (.ltn) on the web!",
+  "main": "ltn.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "lumatone",
+    "isomorphic",
+    "microtonal"
+  ],
+  "author": "Vincenzo Sicurella",
+  "license": "0BSD",
+  "dependencies": {
+    "canvg": "^3.0.10",
+    "pica": "^9.0.1"
+  }
+}
