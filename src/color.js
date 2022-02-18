@@ -1,6 +1,6 @@
-const mod = (num, mod) => ((num % mod) + mod) % mod;
+export const mod = (num, mod) => ((num % mod) + mod) % mod;
 
-function hexToRgba(colorString) {
+export function hexToRgba(colorString) {
     let rgbStr = colorString.slice(colorString.length - 6);
     let a = 1;
 
@@ -18,7 +18,7 @@ function hexToRgba(colorString) {
 }
 
 // expects {r: 0-255, g: 0-255, b: 0-255, a: 0-1} 
-function rgbaToHex(color) {
+export function rgbaToHex(color) {
     let shorts = [
         color.r.toString(16),
         color.g.toString(16),
@@ -30,12 +30,12 @@ function rgbaToHex(color) {
 
 // expects {r: 0-255, g: 0-255, b: 0-255, a: 0-1} 
 // returns "rgba(r, g, b, a)"
-function rgbaToString(color) {
+export function rgbaToString(color) {
     return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
 }
 
 // rgb, 0-255
-function rgbToHue(R, G, B) {
+export function rgbToHue(R, G, B) {
     let r = R/255.0;
     let g = G/255.0;
     let b = B/255.0;
@@ -60,7 +60,7 @@ function rgbToHue(R, G, B) {
 }
 
 // hue: 0-360, sat, light: 0-1
-function hslToRgb(hue, saturation, lightness) {
+export function hslToRgb(hue, saturation, lightness) {
     const C = (1 - Math.abs(2 * lightness - 1)) * saturation;
     const X = C * (1 - Math.abs(mod(hue / 60, 2) - 1));
     const norm = lightness - C * 0.5;
@@ -88,7 +88,7 @@ function hslToRgb(hue, saturation, lightness) {
 }
 
 // rgb, 0-255
-function rgbToHsv(R, G, B) {
+export function rgbToHsv(R, G, B) {
     let r = R/255.0;
     let g = G/255.0;
     let b = B/255.0;
@@ -112,7 +112,7 @@ function rgbToHsv(R, G, B) {
 }
 
 // hue: 0-360, sat, value: 0-1
-function hsvToRgb(hue, saturation, value) {
+export function hsvToRgb(hue, saturation, value) {
     const C = value * saturation;
     const X = C * (1 - Math.abs(mod(hue / 60, 2) - 1));
     const norm = value - C;
@@ -140,7 +140,7 @@ function hsvToRgb(hue, saturation, value) {
 }
 
 // expects object { r, g, b, a }
-function getRgbLed(color) {
+export function getRgbLed(color) {
     const hsv = rgbToHsv(color.r, color.g, color.b);
     // let brightness = color.a * hsv.v;
     // let ledRgb = hsvToRgb(hsv.h, hsv.s, 1);

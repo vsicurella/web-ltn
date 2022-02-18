@@ -1,4 +1,4 @@
-const LATERALRADIUSRATIO = 0.8660254037844;
+export const LATERALRADIUSRATIO = 0.8660254037844;
 const BOARDROWOFFSET = 2;
 
 let horizontalScalar = 1.0;
@@ -6,7 +6,7 @@ let verticalScalar = 1.0;
 
 let startingCentre = { x: 0, y: 0 };
 
-const boardGeometry =
+export const boardGeometry =
 {
     horizontalLines: [
         [ 0, 1 ],
@@ -43,7 +43,7 @@ const boardGeometry =
 };
 boardGeometry.maxHorizontalLength = boardGeometry.horizontalLines.reduce((max, line) => line.length > max ? line.length : max, 0);
 
-function boardKeyToHexPosition(boardNum, keyNum) {
+export function boardKeyToHexPosition(boardNum, keyNum) {
     for (let lineIx = 0; lineIx < boardGeometry.horizontalLines.length; lineIx++) {
 		let rowIx = boardGeometry.horizontalLines[lineIx].indexOf(keyNum);
 		if (rowIx != -1)
@@ -54,7 +54,7 @@ function boardKeyToHexPosition(boardNum, keyNum) {
 	}
 }
 
-function getKeyboardHexCoords() {
+export function getKeyboardHexCoords() {
 	let coords = [];
 	for (let board = 0; board < 5; board++) {
 		let boardCoords = [];
@@ -65,22 +65,22 @@ function getKeyboardHexCoords() {
 	return coords;
 }
 
-function distanceStepsAwayX(lateral, margin, stepsX, stepsY) {
+export function distanceStepsAwayX(lateral, margin, stepsX, stepsY) {
 	return stepsX * (2 * lateral + margin) + ((stepsY + 1) / 2) * (lateral + margin / 2.0);
 }
 
-function distanceStepsAwayY(radius, margin, stepsY) {
+export function distanceStepsAwayY(radius, margin, stepsY) {
 	return stepsY * (radius * 1.5 + margin * LATERALRADIUSRATIO);
 }
 
-function verticalToSlantOffset(rowNum, offsetIn) {
+export function verticalToSlantOffset(rowNum, offsetIn) {
 	return offsetIn -  Math.floor((rowNum * 0.5));
 }
 
 
 // TODO Turn into a class
 
-function calculateCentres(startingOctave, numOctaves, basis = { column: { x: 0.5, y: 0.5 }, row: { x: 0.5, y: 0.5 } }) {
+export function calculateCentres(startingOctave, numOctaves, basis = { column: { x: 0.5, y: 0.5 }, row: { x: 0.5, y: 0.5 } }) {
 	let centres = {};
 
 	const numColumnsInOctave = boardGeometry.maxHorizontalLength;
@@ -128,7 +128,7 @@ function calculateCentres(startingOctave, numOctaves, basis = { column: { x: 0.5
 	return centres;
 }
 
-function getSkewBasis(firstKeyCentrePoint, secondKeyCentrePoint, rowStepsFirstToSecond, thirdKeyCentrePoint, colStepsSecondToThird) {	
+export function getSkewBasis(firstKeyCentrePoint, secondKeyCentrePoint, rowStepsFirstToSecond, thirdKeyCentrePoint, colStepsSecondToThird) {	
 	
 	startingCentre = firstKeyCentrePoint;
 

@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html>
+
+<head>
     <meta charset="UTF-8">
     <title>Web LTN Reader</title>
 
-    <script src="./hex.js"></script> 
-    <script src="./ltn.js"></script>
-    <script src="./color.js"></script>
-    <script src="./draw.js"></script>
+    <!-- <script type="module" src="./src/hex.js"></script>  -->
+    <!-- <script type="module" src="./src/ltn.js"></script> -->
+    <!-- <script type="module" src="./src/color.js"></script> -->
+    <!-- <script type="module" src="./src/draw.js"></script> -->
+
     <link rel="stylesheet" href="./style.css">
-<head>
+    <script type="module" src="./main.js"></script>
 
 </head>
 <body>
@@ -17,7 +20,7 @@
 
     <div id="controls">
         <label for="ltn-file">Select an .LTN file:</label>
-        <input id="ltn-file" type="file" onchange="loadFile()"></input>
+        <input id="ltn-file" type="file"></input>
     </div>
 
     <div id="display">
@@ -49,9 +52,5 @@
 </div>
 
 </body>
-
-<script>
-    document.body.onload = resetKeys;
-</script>
 
 </html>

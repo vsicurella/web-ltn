@@ -2,9 +2,10 @@
   "name": "web-ltn",
   "version": "1.0.0",
   "description": "View Lumatone mappings (.ltn) on the web!",
-  "main": "ltn.js",
+  "main": "./main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run": "node main.js"
   },
   "keywords": [
     "lumatone",
@@ -15,6 +16,10 @@
   "license": "0BSD",
   "dependencies": {
     "canvg": "^3.0.10",
-    "pica": "^9.0.1"
+    "pica": "^9.0.1",
+    "process": "^0.11.10"
+  },
+  "devDependencies": {
+    "parcel": "^2.3.1"
   }
 }

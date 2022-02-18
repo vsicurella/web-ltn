@@ -1,3 +1,10 @@
+import { getSkewBasis, calculateCentres, LATERALRADIUSRATIO } from "./hex.js"
+import { NUMOCTAVES, KEYSPEROCT, currentLtn } from "./ltn.js";
+import { rgbaToString, hexToRgba } from "./color.js";
+// import { Canvg } from "canvg";
+import pica, { Pica } from "pica";
+import Canvg from "canvg";
+
 const imageAspect = 2.498233;
 
 // "Constants" (not const for tweaking purposes)
@@ -17,11 +24,11 @@ let keyWidth = 0;
 let keyHeight = 0;
 let centres = {};
 
-let roundN = (n, value) => Math.round(value * (10 ** n)) / (10 ** n);
+const roundN = (n, value) => Math.round(value * (10 ** n)) / (10 ** n);
 
 let colorFnc = (hexString) => rgbaToString(hexToRgba(hexString));
 
-function refreshColor() {
+export function refreshColor() {
 
     let keyElements = Array.from(document.getElementsByTagName('svg'));
 
@@ -34,13 +41,14 @@ function refreshColor() {
         let octaveIndex = Math.floor(keyNum / KEYSPEROCT);
         let keyIndex = keyNum % KEYSPEROCT;
 
+        const mapping = currentLtn.data;
         let keyData = mapping[octaveIndex][keyIndex];   
         let color = colorFnc(keyData.color);
         key.style.fill = color;
     }
 }
 
-function resetCentres() {
+export function resetCentres() {
     const displayElement = document.getElementById("keyboard-base");
     const width = displayElement.clientWidth;
     const height = displayElement.clientHeight;
@@ -66,7 +74,7 @@ function resetCentres() {
     centres = calculateCentres(0, 5, basis);
 }
 
-function resetKeys() {
+export function resetKeys() {
     console.log('reset keys');
 
     resetCentres();
@@ -98,13 +106,14 @@ function resetKeys() {
         }
     }
 
-    if (mapping)
+    if (currentLtn.data)
         refreshColor();
 }
 
-let keyBlendMode = "normal";
+let keyBlendMode = "overlay";
 let shadingBlendMode = "normal";
-function renderToCanvas() {
+export function renderToCanvas() {
+    console.log('rendering canvas');
     let canvas = document.getElementById("keyboard-render");
 
     let ctx = canvas.getContext("2d");
@@ -114,42 +123,57 @@ function renderToCanvas() {
         canvas.width = graphicWidth;
         canvas.height = graphicHeight;
 
-        const scale = canvas.width / baseImg.naturalWidth;
+        const scaleW = graphicWidth / baseImg.naturalWidth;
+        const scaleH = graphicHeight / baseImg.naturalHeight;
 
-        ctx.drawImage(baseImg, 0, 0, graphicWidth, graphicHeight);
+        // const kw = keyAsset.width / keyWidth;
+        // const kh = keyAsset.height / keyHeight;
+        // ctx.drawImage(baseImg, 0, 0, graphicWidth, graphicHeight);
 
-        if (mapping) {
-            // render keys
-            ctx.globalCompositeOperation = keyBlendMode;
+        const pica = require('pica')();
+        pica.resize(baseImg, canvas).then(() => {
+            const mapping = currentLtn.data;
+            if (mapping) {
+                console.log('drawing canvas keys');
+                // render keys
+                ctx.globalCompositeOperation = keyBlendMode;
 
-            // ctx.fillStyle = 'rgba(255, 0, 0, 1)';
-            ctx.drawImage(keyOutline, canvas.width * 0.5, canvas.height * 0.5, keyWidth, keyHeight);
+                for (let b = 0; b < NUMOCTAVES; b++) {
+                    for (let k = 0; k < KEYSPEROCT; k++) {
+                        let centre = centres[b][k];
+                        if (centre == undefined) {
+                            console.log(`board ${b} key ${k} position is undefined`);
+                            continue;
+                        }
 
-            // for (let b = 0; b < NUMOCTAVES; b++) {
-            //     for (let k = 0; k < KEYSPEROCT; k++) {
-            //         let centre = centres[b][k];
-            //         if (centre == undefined) {
-            //             console.log(`board ${b} key ${k} position is undefined`);
-            //             continue;
-            //         }
+                        let keyData = mapping[b][k];
+                        if (keyData == undefined) {
+                            console.log(`board ${b} key ${k} data is undefined`);
+                        }
 
-            //         centre.x *= scale;
-            //         centre.y *= scale;
+                        centre.x -= (keyWidth * LATERALRADIUSRATIO) * 17.9;
+                        centre.y -= keyHeight * 0.48;
 
-            //         let keyData = mapping[b][k];
-            //         if (keyData == undefined) {
-            //             console.log(`board ${b} key ${k} data is undefined`);
-            //         }
-            //         console.log(JSON.stringify(centre));
-            //         let color = colorFnc(keyData.color);
-            //         ctx.fillStyle = color;
-            //         ctx.drawImage(keyOutline, centre.x, centre.y);
-            //     }
-            // }
-        
-            // ctx.globalCompositeOperation = shadingBlendMode;
-            // ctx.drawImage(shadingImage, 0, 0, graphicWidth, graphicHeight);
-        }
+                        // console.log(`b: ${b}, k: ${k} = ${JSON.stringify(centre)}`);
+
+                        Canvg.from(ctx, keyAsset, { ignoreClear: true, ignoreDimensions: true })
+                        .then((keysvg) => {
+                            let color = colorFnc(keyData.color);
+                            color.a = 0.88;
+                            ctx.fillStyle = color;
+
+                            keysvg.resize(keyWidth, keyHeight);
+                            keysvg.render({ offsetX: centre.x, offsetY: centre.y }); 
+                        });
+                    }
+                }
+            
+
+                ctx.globalCompositeOperation = shadingBlendMode;
+                // ctx.drawImage(shadingImage, 0, 0, graphicWidth, graphicHeight);
+                pica.resize(shadingImage, canvas);
+            }
+        });
     };
 
     baseImg = new Image(graphicWidth, graphicHeight);
@@ -157,12 +181,17 @@ function renderToCanvas() {
     keyOutline = new Image(keyWidth, keyHeight);
     // keyOutline = document.getElementById("key-outline");
 
-    baseImg.src = "./png/keyboard-base-1x.png";
+    const baseAsset = require('../png/keyboard-base-1x.png');
+    const shadingAsset = require( "../png/keyboard-shading-1x.png");
+    // const keyAsset = require("../png/key-shape.png");
+    const keyAsset = require("../svg/key-outline.svg");
+    
+    baseImg.src = baseAsset;
     baseImg.onload = () => {
-        shadingImage.src = "./png/keyboard-shading-1x.png";
+        shadingImage.src = shadingAsset;
         shadingImage.onload = () => {
-            keyOutline.src = "./png/key-shape.png";
-            // keyOutline.src = "./svg/key-outline.svg";
+            keyOutline.src = keyAsset;
+            
             keyOutline.onload = draw;
         }
     }
