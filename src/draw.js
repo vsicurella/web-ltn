@@ -1,9 +1,10 @@
 import { getSkewBasis, calculateCentres, LATERALRADIUSRATIO } from "./hex.js"
 import { NUMOCTAVES, KEYSPEROCT, currentLtn } from "./ltn.js";
-import { rgbaToString, hexToRgba } from "./color.js";
-// import { Canvg } from "canvg";
-import pica, { Pica } from "pica";
-import Canvg from "canvg";
+import { rgbaToString, hexToRgba, getRgbLed } from "./color.js";
+
+import { toPng } from 'html-to-image';
+
+import { fabric } from "fabric";
 
 const imageAspect = 2.498233;
 
@@ -27,6 +28,8 @@ let centres = {};
 const roundN = (n, value) => Math.round(value * (10 ** n)) / (10 ** n);
 
 let colorFnc = (hexString) => rgbaToString(hexToRgba(hexString));
+// let colorFnc = (hexString) => rgbaToString(getRgbLed(hexToRgba(hexString)));
+
 
 export function refreshColor() {
 
@@ -45,7 +48,34 @@ export function refreshColor() {
         let keyData = mapping[octaveIndex][keyIndex];   
         let color = colorFnc(keyData.color);
         key.style.fill = color;
+        key.style.mixBlendMode = 'dist';
+        key.style.opacity = 0.88;
+
+        const tooltipId = `${keyId}-tooltip`;
+        let previousTooltip = key.getElementById(tooltipId);
+        if (previousTooltip)
+            key.removeChild(previousTooltip);
+
+        let tooltipcontainer = document.createElement('div');
+        tooltipcontainer.id = tooltipId;
+        tooltipcontainer.classList.add('tooltip');
+        let tooltip = document.createElement('span');
+        tooltip.innerText = `${key.id} Ch ${keyData.channel}, Note ${keyData.note}`;
+        tooltip.classList.add('tooltiptext');
+
+        tooltipcontainer.appendChild(tooltip);
+        key.appendChild(tooltipcontainer);
     }
+
+    // render html as image
+    let display = document.getElementById('display');
+    toPng(display).then((url) => {
+        let imgdiv = document.getElementById('display-image');
+        imgdiv.innerHTML = '';
+        let img = new Image();
+        img.src = url;
+        imgdiv.appendChild(img);
+    })
 }
 
 export function resetCentres() {
@@ -92,7 +122,9 @@ export function resetKeys() {
             }
 
             let newKey = svg.cloneNode(true);
-            newKey.id = `key-${k + b * KEYSPEROCT}`;
+
+            const keyNum = `key-${k + b * KEYSPEROCT}`;
+            newKey.id = keyNum;
 
             newKey.style.position = 'inherit';
             newKey.style.left = `${roundN(2, centre.x)}px`;
@@ -111,33 +143,36 @@ export function resetKeys() {
 }
 
 let keyBlendMode = "overlay";
-let shadingBlendMode = "normal";
+let shadingBlendMode = "difference";
 export function renderToCanvas() {
     console.log('rendering canvas');
-    let canvas = document.getElementById("keyboard-render");
 
-    let ctx = canvas.getContext("2d");
+    let canvas = new fabric.StaticCanvas('keyboard-render', { width: graphicWidth, height: graphicHeight });
+    canvas.clear();
 
     let baseImg, shadingImage, keyOutline;
     let draw = () => {
-        canvas.width = graphicWidth;
-        canvas.height = graphicHeight;
-
         const scaleW = graphicWidth / baseImg.naturalWidth;
         const scaleH = graphicHeight / baseImg.naturalHeight;
 
-        // const kw = keyAsset.width / keyWidth;
-        // const kh = keyAsset.height / keyHeight;
-        // ctx.drawImage(baseImg, 0, 0, graphicWidth, graphicHeight);
+        const graphicResize = new fabric.Image.filters.Resize({ scaleX: scaleW, scaleY: scaleH });
+        let fbBase = new fabric.Image(baseImg);
+        fbBase.applyFilters([graphicResize]);
+        canvas.add(fbBase);
 
-        const pica = require('pica')();
-        pica.resize(baseImg, canvas).then(() => {
+        let svgEl = document.getElementById('key-outline');
+        let svgText = svgEl.outerHTML.split('\n').map(line => line.trim()).join('');
+        fabric.loadSVGFromString(svgText, (objects, options) => {
+            let temp = objects[0];
+            // temp.set({ width: keyWidth, height: keyHeight })
+            temp.scaleToWidth(keyWidth, true);
+            temp.scaleToHeight(keyHeight, true);
+            temp.globalCompositeOperation = keyBlendMode;
+
             const mapping = currentLtn.data;
             if (mapping) {
                 console.log('drawing canvas keys');
                 // render keys
-                ctx.globalCompositeOperation = keyBlendMode;
-
                 for (let b = 0; b < NUMOCTAVES; b++) {
                     for (let k = 0; k < KEYSPEROCT; k++) {
                         let centre = centres[b][k];
@@ -151,29 +186,29 @@ export function renderToCanvas() {
                             console.log(`board ${b} key ${k} data is undefined`);
                         }
 
-                        centre.x -= (keyWidth * LATERALRADIUSRATIO) * 17.9;
-                        centre.y -= keyHeight * 0.48;
+                        temp.clone((newKey) => {
+                            // todo fix
+                            let x = centre.x - (keyWidth * LATERALRADIUSRATIO) * 17.9;
+                            // centre.x -= graphicWidth * 0.5
+                            let y = centre.y - keyHeight * 0.48;
 
-                        // console.log(`b: ${b}, k: ${k} = ${JSON.stringify(centre)}`);
+                            // console.log(`b: ${b}, k: ${k} = ${JSON.stringify(centre)}`);
 
-                        Canvg.from(ctx, keyAsset, { ignoreClear: true, ignoreDimensions: true })
-                        .then((keysvg) => {
+                            newKey.setPositionByOrigin(new fabric.Point(x, y), 'left', 'top');
+    
                             let color = colorFnc(keyData.color);
-                            color.a = 0.88;
-                            ctx.fillStyle = color;
-
-                            keysvg.resize(keyWidth, keyHeight);
-                            keysvg.render({ offsetX: centre.x, offsetY: centre.y }); 
-                        });
+                            newKey.fill =  '#' + (new fabric.Color(color)).toHexa();
+                            canvas.add(newKey);
+                        })                        
                     }
                 }
-            
-
-                ctx.globalCompositeOperation = shadingBlendMode;
-                // ctx.drawImage(shadingImage, 0, 0, graphicWidth, graphicHeight);
-                pica.resize(shadingImage, canvas);
             }
         });
+        
+        let fbShadows = new fabric.Image(shadingImage);
+        fbShadows.globalCompositeOperation = shadingBlendMode;
+        fbShadows.applyFilters([graphicResize]);
+        canvas.add(fbShadows);
     };
 
     baseImg = new Image(graphicWidth, graphicHeight);
@@ -197,3 +232,12 @@ export function renderToCanvas() {
     }
 }
 
+export function setKeyBlendMode(mode) {
+    keyBlendMode = mode;
+    renderToCanvas();
+}
+
+export function setShadingBlendMode(mode) {
+    shadingBlendMode = mode;
+    renderToCanvas();
+}
