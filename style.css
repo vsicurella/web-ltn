@@ -12,7 +12,7 @@
     display: none;
 }
 
-#keyboard-base {
+.keyboard-base {
     background: url("./png/keyboard-base-1x.png");
     background-size: contain;
     background-blend-mode: normal;
