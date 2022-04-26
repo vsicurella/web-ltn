@@ -1,4 +1,4 @@
-import { boardGeometry, calculateCentres, LATERALRADIUSRATIO } from "./hex";
+import { Board, boardGeometry, calculateCentres, LATERALRADIUSRATIO, LumatoneBaseImage } from "./hex";
 
 import { fabric } from "fabric";
 import { rgbaToString, hexToRgba, getRgbLed } from "./color.js";
@@ -7,6 +7,8 @@ export class ImageToLtnConverter {
 
     fileData = null;
     currentImage = new Image();
+
+    samplePoints = [];
 
     constructor(canvasId, width, height) {
         this.canvasId = canvasId;
@@ -20,6 +22,13 @@ export class ImageToLtnConverter {
             this.backgroundImage.scaleToHeight(this.height)
             this.resetCanvas();
         });
+
+        this.board = new Board(0, 5);
+        LumatoneBaseImage.setBoardBasis(this.board);
+
+        this.addHexGuides();
+
+        console.log(this.board);
     }
 
     resetCanvas() {
@@ -32,20 +41,48 @@ export class ImageToLtnConverter {
     setImageFile(fileData) {
         console.log('convertImageToLtn()');
         this.fileData = fileData;
+
+        this.resetCanvas();
     
         let file = new FileReader();
         file.onload = (fileData) => {
             if (fileData == null)
                 throw new Error("unable to read file");
     
-            this.currentImage.src = fileData.target.result;
-            this.currentImage.onload = () => {
-                this.canvas.add(new fabric.Image(this.currentImage));
+            let img = new Image();
+            img.src = fileData.target.result;
+            img.onload = () => {
+                this.currentImage = new fabric.Image(img);
+                this.canvas.add(this.currentImage);
+                this.currentImage.on('modified', (event) => console.log(event))
+
+                this.addHexGuides();
             };
+
         };
     
         file.readAsDataURL(this.fileData);
     }
 
-    
+    addHexGuides() {
+        const dotRadius = 8;
+        const octaveCentres = this.board.getCentres();
+        for (const oct in octaveCentres) {
+            const centres = octaveCentres[oct];
+            for (const key in centres) {
+                const p = centres[key];
+                let dot = new fabric.Circle({
+                    radius: dotRadius,
+                    fill: 'black',
+                    left: p.x - dotRadius,
+                    top: p.y - dotRadius
+                });
+                this.canvas.add(dot);
+            }
+        }
+    }
+
+    parseTransform() {
+
+    }
 }
