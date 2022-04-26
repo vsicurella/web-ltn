@@ -69,11 +69,10 @@ export class BoardGeometry {
 		return offsetIn -  Math.floor((rowNum * 0.5));
 	}
 
-	constructor() {
-		this.maxHorizontalLength = this.horizontalLines.reduce((max, line) => line.length > max ? line.length : max, 0);
+	static maxHorizontalLength() {
+		return this.horizontalLines.reduce((max, line) => line.length > max ? line.length : max, 0);
 	}
 }
-// TODO Turn into a class
 
 export class Board {
 	basis = {
@@ -158,7 +157,7 @@ export class Board {
 
 		this.centres = {};
 
-		const numColumnsInOctave = BoardGeometry.maxHorizontalLength;
+		const numColumnsInOctave = BoardGeometry.maxHorizontalLength();
 		const numRowsInOctave	 = BoardGeometry.horizontalLines.length;
 
 		const totalOctaves = Math.abs(this.numOctaves - this.startingOctave);
@@ -169,11 +168,13 @@ export class Board {
 		const rowX = this.basis.row.x    * this.verticalScalar;
 		const rowY = this.basis.row.y    * this.verticalScalar;
 
-		let octaveColumnOffset = startingOctave * numColumnsInOctave;
-		let octaveRowOffset = startingOctave * BOARDROWOFFSET;
-		
-		for (let octaveIndex = this.startingOctave; octaveIndex < this.startingOctave + numOctaves; octaveIndex++) {
+		let octaveColumnOffset = this.startingOctave * numColumnsInOctave;
+		let octaveRowOffset = this.startingOctave * BOARDROWOFFSET;
 
+		console.log({octaveColumnOffset:octaveColumnOffset,octaveRowOffset:octaveRowOffset})
+		
+		for (let octaveIndex = this.startingOctave; octaveIndex < this.startingOctave + this.numOctaves; octaveIndex++) {
+			console.log('calculating centres for octave ' + octaveIndex);
 			this.centres[octaveIndex] = {};
 			let octaveCentres = this.centres[octaveIndex];
 			let keyIndex = 0;
@@ -182,9 +183,13 @@ export class Board {
 				const colStart = BoardGeometry.verticalToSlantOffset(row, BoardGeometry.firstColumnOffsets[row]) + octaveColumnOffset;
 				const colEnd = colStart + BoardGeometry.horizontalLines[row]?.length || 0;
 
+				console.log('row ' + row + ', firstcolumnoffset: ' + BoardGeometry.firstColumnOffsets[row])
+				console.log('colStart ' + colStart + ', colEnd ' + colEnd);
+
 				let octaveRow = row + octaveRowOffset;
 
 				for (let col = colStart; col < colEnd; col++) {
+					console.log('col ' + col)
 
 					let centre = {
 						x: this.startingCentre.x + col * colX + octaveRow * rowX,
@@ -221,8 +226,8 @@ export class LumatoneBaseImage {
 	static setBoardBasis(board) {
 		return board.setBasisFromPoints(
 			{ x: this.oct1Key1X, y: this.oct1Key1Y },
-			{ x: this.oct1Key56X, y: this.oct1Key56Y }, stepsBetweenFirstAndSecond,
-			{ x: this.oct5Key7X, y: this.oct5Key7Y }, stepsBetweenSecondAndThird,
+			{ x: this.oct1Key56X, y: this.oct1Key56Y }, this.stepsBetweenFirstAndSecond,
+			{ x: this.oct5Key7X, y: this.oct5Key7Y }, this.stepsBetweenSecondAndThird,
 		)
 	}
 }
