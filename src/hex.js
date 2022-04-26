@@ -126,6 +126,8 @@ export class Board {
 
 	setBasisFromPoints(firstKeyCentrePoint, secondKeyCentrePoint, rowStepsFirstToSecond, thirdKeyCentrePoint, colStepsSecondToThird) {	
 	
+		this.centres = null;
+
 		this.startingCentre = firstKeyCentrePoint;
 	
 		const secondKeyNormFirst = { x: secondKeyCentrePoint.x - this.startingCentre.x, y: secondKeyCentrePoint.y - this.startingCentre.y };
@@ -161,7 +163,7 @@ export class Board {
 		const numRowsInOctave	 = BoardGeometry.horizontalLines.length;
 
 		const totalOctaves = Math.abs(this.numOctaves - this.startingOctave);
-		const maxColumnLength = numRowsInOctave + BOARDROWOFFSET * (totalOctaves - 1);
+		const maxColumnLength = numRowsInOctave;
 
 		const colX = this.basis.column.x * this.horizontalScalar;
 		const colY = this.basis.column.y * this.horizontalScalar;
@@ -170,11 +172,8 @@ export class Board {
 
 		let octaveColumnOffset = this.startingOctave * numColumnsInOctave;
 		let octaveRowOffset = this.startingOctave * BOARDROWOFFSET;
-
-		console.log({octaveColumnOffset:octaveColumnOffset,octaveRowOffset:octaveRowOffset})
 		
 		for (let octaveIndex = this.startingOctave; octaveIndex < this.startingOctave + this.numOctaves; octaveIndex++) {
-			console.log('calculating centres for octave ' + octaveIndex);
 			this.centres[octaveIndex] = {};
 			let octaveCentres = this.centres[octaveIndex];
 			let keyIndex = 0;
@@ -183,14 +182,9 @@ export class Board {
 				const colStart = BoardGeometry.verticalToSlantOffset(row, BoardGeometry.firstColumnOffsets[row]) + octaveColumnOffset;
 				const colEnd = colStart + BoardGeometry.horizontalLines[row]?.length || 0;
 
-				console.log('row ' + row + ', firstcolumnoffset: ' + BoardGeometry.firstColumnOffsets[row])
-				console.log('colStart ' + colStart + ', colEnd ' + colEnd);
-
 				let octaveRow = row + octaveRowOffset;
 
 				for (let col = colStart; col < colEnd; col++) {
-					console.log('col ' + col)
-
 					let centre = {
 						x: this.startingCentre.x + col * colX + octaveRow * rowX,
 						y: this.startingCentre.y + col * colY + octaveRow * rowY
@@ -223,11 +217,11 @@ export class LumatoneBaseImage {
 	static stepsBetweenFirstAndSecond = 10;
 	static stepsBetweenSecondAndThird = 24;
 
-	static setBoardBasis(board) {
+	static setBoardBasis(board, width, height, imgX, imgY) {
 		return board.setBasisFromPoints(
-			{ x: this.oct1Key1X, y: this.oct1Key1Y },
-			{ x: this.oct1Key56X, y: this.oct1Key56Y }, this.stepsBetweenFirstAndSecond,
-			{ x: this.oct5Key7X, y: this.oct5Key7Y }, this.stepsBetweenSecondAndThird,
+			{ x: this.oct1Key1X * width + imgX, y: this.oct1Key1Y * height + imgY },
+			{ x: this.oct1Key56X * width + imgX, y: this.oct1Key56Y * height + imgY }, this.stepsBetweenFirstAndSecond,
+			{ x: this.oct5Key7X * width + imgX, y: this.oct5Key7Y * height + imgY }, this.stepsBetweenSecondAndThird,
 		)
 	}
 }
