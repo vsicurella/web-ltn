@@ -1,4 +1,4 @@
-import { getSkewBasis, calculateCentres, LATERALRADIUSRATIO } from "./hex.js"
+import { getSkewBasis, calculateCentres, LATERALRADIUSRATIO, Board, LumatoneBaseImage } from "./hex.js"
 import { NUMOCTAVES, KEYSPEROCT, currentLtn } from "./ltn.js";
 import { rgbaToString, hexToRgba, getRgbLed } from "./color.js";
 
@@ -30,6 +30,7 @@ const roundN = (n, value) => Math.round(value * (10 ** n)) / (10 ** n);
 let colorFnc = (hexString) => rgbaToString(hexToRgba(hexString));
 // let colorFnc = (hexString) => rgbaToString(getRgbLed(hexToRgba(hexString)));
 
+let board = new Board(0, 5);
 
 export function refreshColor() {
 
@@ -96,12 +97,8 @@ export function resetCentres() {
         h: graphicHeight
     };
 
-    const oct1Key1  = { x: oct1Key1X * graphicWidth + lumatoneBounds.x,   y: oct1Key1Y * graphicHeight + lumatoneBounds.y };
-	const oct1Key56 = { x: oct1Key56X * graphicWidth + lumatoneBounds.x,  y: oct1Key56Y * graphicHeight + lumatoneBounds.y };
-	const oct5Key7  = { x: oct5Key7X * graphicWidth + lumatoneBounds.x,   y: oct5Key7Y * graphicHeight + lumatoneBounds.y };
-
-    const basis = getSkewBasis(oct1Key1, oct1Key56, 10, oct5Key7, 24);
-    centres = calculateCentres(0, 5, basis);
+    LumatoneBaseImage.setBoardBasis(board, graphicWidth, graphicHeight, lumatoneBounds.x, lumatoneBounds.y);
+    centres = board.getCentres();
 }
 
 export function resetKeys() {
