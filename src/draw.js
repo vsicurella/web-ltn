@@ -27,8 +27,8 @@ let centres = {};
 
 const roundN = (n, value) => Math.round(value * (10 ** n)) / (10 ** n);
 
-let colorFnc = (hexString) => rgbaToString(hexToRgba(hexString));
-// let colorFnc = (hexString) => rgbaToString(getRgbLed(hexToRgba(hexString)));
+// let colorFnc = (hexString) => rgbaToString(hexToRgba(hexString));
+let colorFnc = (hexString) => rgbaToString(getRgbLed(hexToRgba(hexString)));
 
 let board = new Board(0, 5);
 
@@ -194,6 +194,7 @@ export function renderToCanvas() {
                             newKey.setPositionByOrigin(new fabric.Point(x, y), 'left', 'top');
     
                             let color = colorFnc(keyData.color);
+                            // console.log(color)
                             newKey.fill =  '#' + (new fabric.Color(color)).toHexa();
                             canvas.add(newKey);
                         })                        

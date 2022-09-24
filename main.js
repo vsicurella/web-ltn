@@ -1,8 +1,8 @@
 import { resetKeys, setKeyBlendMode, setShadingBlendMode } from './src/draw.js'
 import { currentLtn } from './src/ltn.js'
-import { convertImageToLtn, ImageToLtnConverter } from './src/image.js'
+// import { convertImageToLtn, ImageToLtnConverter } from './src/image.js'
 
-const converter = new ImageToLtnConverter('scale-image', 1300, 280);
+// const converter = new ImageToLtnConverter('scale-image', 1300, 280);
 
 document.body.onload = () => {
      resetKeys();

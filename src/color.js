@@ -1,3 +1,6 @@
+import { INTERPOLATION } from "./interpolation";
+import { getLumatoneColor, LumatoneColorModel, LumatoneColorTables } from "./lumatone-color-functions";
+
 export const mod = (num, mod) => ((num % mod) + mod) % mod;
 
 export function hexToRgba(colorString) {
@@ -139,15 +142,21 @@ export function hsvToRgb(hue, saturation, value) {
     return rgb;
 }
 
+let colorModel = new LumatoneColorModel(LumatoneColorTables.ADJUSTED, INTERPOLATION.CUBIC);
+
 // expects object { r, g, b, a }
-export function getRgbLed(color) {
-    const hsv = rgbToHsv(color.r, color.g, color.b);
+export function getRgbLed(color, table=LumatoneColorTables.ADJUSTED, interpolation=INTERPOLATION.CUBIC) {
+    // const hsv = rgbToHsv(color.r, color.g, color.b);
     // let brightness = color.a * hsv.v;
     // let ledRgb = hsvToRgb(hsv.h, hsv.s, 1);
     // ledRgb.a = brightness;
-    const brightness = hsv.v * 0.5 + 0.5;
-    const alpha = (1 - (1 - hsv.v)) * color.a;
-    let ledRgb = hsvToRgb(hsv.h, hsv.s, brightness);
-    ledRgb.a = alpha;
-    return ledRgb;
+    // const brightness = hsv.v * 0.5 + 0.5;
+    // const alpha = (1 - (1 - hsv.v)) * color.a;
+    // let ledRgb = hsvToRgb(hsv.h, hsv.s, brightness);
+    // ledRgb.a = alpha;
+    // return ledRgb;
+
+    // let lumaColor = getLumatoneColor(LumatoneColorTables.RAW, color.r, color.g, color.b);
+    let lumaColor = colorModel.getColorWithOptions(color.r, color.g, color.b, table, interpolation);
+    return Object.assign(lumaColor, { a: 1 })
 }
