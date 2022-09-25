@@ -1,10 +1,11 @@
 import { getSkewBasis, calculateCentres, LATERALRADIUSRATIO, Board, LumatoneBaseImage } from "./hex.js"
 import { NUMOCTAVES, KEYSPEROCT, currentLtn } from "./ltn.js";
-import { rgbaToString, hexToRgba, getRgbLed } from "./color.js";
+// import { rgbaToString, hexToRgba, getRgbLed } from "./color.js";
 
 import { toPng } from 'html-to-image';
 
 import { fabric } from "fabric";
+import { LumaColor } from "./color.js";
 
 const imageAspect = 2.498233;
 
@@ -28,7 +29,7 @@ let centres = {};
 const roundN = (n, value) => Math.round(value * (10 ** n)) / (10 ** n);
 
 // let colorFnc = (hexString) => rgbaToString(hexToRgba(hexString));
-let colorFnc = (hexString) => rgbaToString(getRgbLed(hexToRgba(hexString)));
+let colorFnc = (hexString) => LumaColor.fromRgbString(hexString)
 
 let board = new Board(0, 5);
 
@@ -48,7 +49,7 @@ export function refreshColor() {
         const mapping = currentLtn.data;
         let keyData = mapping[octaveIndex][keyIndex];   
         let color = colorFnc(keyData.color);
-        key.style.fill = color;
+        key.style.fill = color.toDisplayColor().toString();
         key.style.mixBlendMode = 'dist';
         key.style.opacity = 0.88;
 
@@ -69,14 +70,14 @@ export function refreshColor() {
     }
 
     // render html as image
-    let display = document.getElementById('display');
-    toPng(display).then((url) => {
-        let imgdiv = document.getElementById('display-image');
-        imgdiv.innerHTML = '';
-        let img = new Image();
-        img.src = url;
-        imgdiv.appendChild(img);
-    })
+    // let display = document.getElementById('display');
+    // toPng(display).then((url) => {
+    //     let imgdiv = document.getElementById('display-image');
+    //     imgdiv.innerHTML = '';
+    //     let img = new Image();
+    //     img.src = url;
+    //     imgdiv.appendChild(img);
+    // })
 }
 
 export function resetCentres() {
@@ -195,9 +196,10 @@ export function renderToCanvas() {
     
                             let color = colorFnc(keyData.color);
                             // console.log(color)
-                            newKey.fill =  '#' + (new fabric.Color(color)).toHexa();
+                            // newKey.fill =  '#' + (new fabric.Color(color)).toHexa();
+                            newKey.fill =  color.toDisplayColor().toString();
                             canvas.add(newKey);
-                        })                        
+                        })
                     }
                 }
             }
