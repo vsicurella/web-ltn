@@ -20,11 +20,32 @@ function hasProps(object, propKeys) {
     return true;
 }
 
+function propsAreEqual(object1, object2, propKeys, strict=false) {
+    const compare = (a, b) => (strict) ? a === b : a == b;
+    for (const prop of propKeys)
+        if (!compare(object1[prop], object2[prop]))
+            return false;
+    return true;
+}
+
 export const ColorSpace = {
     RGB:    'rgb',
     RGBA:   'rgba',
-    HSV:    'hsv',
     HSL:    'hsl',
+    HSV:    'hsv',
+
+    getProps: function (space) {
+        switch(space) {
+            case this.RGB:
+                return [ 'r', 'g', 'b' ];
+            case this.RGBA:
+                return [ 'r', 'g', 'b', 'a' ];
+            case this.HSL:
+                return [ 'h', 's', 'l' ];
+            case this.HSV:
+                return [ 'h', 's', 'v' ];
+        }
+    }
 }
 
 export const LumatoneColorTables = {
@@ -639,9 +660,32 @@ export class LumaColor {
         return new LumaColor(ColorSpace.RGBA, ...Object.entries(displayColor).map(entry => entry[1]));
     }
 
+    isExactly(color) {
+        if (this.space.includes('rgb') && color.space.includes('rgb')) {
+            return this.value.r === color.getR()
+                && this.value.g === color.getG()
+                && this.value.b === color.getB()
+                && this.alpha === this.alpha;
+        }
+
+        if (this.space.includes('hs') && color.space.includes('hs')) {
+            // todo compare L and V
+        }
+
+        if (this.space !== color.space)
+            return false;
+
+        return propsAreEqual(this, color, ColorSpace.getProps(this.space))
+    }
+
+    isCloseTo(color) {
+        // todo better colorspace aware function?
+        return ColorsAreClose(this, color, 0.01);
+    }
+
     cacheRgb() {
         for (const val of [this.value, this.cache])
-            if (hasProps(val, ['r', 'g', 'b']))
+            if (hasProps(val, ColorSpace.getProps(ColorSpace.RGB)))
                 return;
         switch (this.space) {
             case ColorSpace.HSL:
@@ -659,7 +703,7 @@ export class LumaColor {
 
     cacheHsl() {
         for (const val of [this.value, this.cache])
-            if (hasProps(val, ['h', 's', 'l']))
+            if (hasProps(val, ColorSpace.getProps(ColorSpace.HSL)))
                 return;
         switch (this.space) {
             case ColorSpace.RGB:
@@ -679,7 +723,7 @@ export class LumaColor {
 
     cacheHsv() {
         for (const val of [this.value, this.cache])
-            if (hasProps(val, ['h', 's', 'v']))
+            if (hasProps(val, ColorSpace.getProps(ColorSpace.HSV)))
                 return;
         switch (this.space) {
             case ColorSpace.RGB:
